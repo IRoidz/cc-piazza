@@ -12,7 +12,6 @@ mongoose.connect(process.env.DB_CONNECTOR).then(()=>{
     console.log('Your mongoDB connector is on...')
 })
 
-
 app.listen(3000, ()=>{
     console.log('up and running')
 })
