@@ -32,7 +32,7 @@ router.post('/register', async(req,res)=>{
     })
 
     try{
-        const savedUser = user.save()
+        const savedUser = await user.save()
         return res.send({
             message: "User registered successfully!",
             user: {
