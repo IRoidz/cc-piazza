@@ -7,8 +7,10 @@ const app = express()
 app.use(bodyParser.json())
 
 const authRoute = require('./routes/auth')
+const membersRoute = require('./routes/members')
 
 app.use('/api/user',authRoute)
+app.use('/api/members', membersRoute)
 
 app.get('/', (req,res)=>{
     res.send("you're in homepage")
