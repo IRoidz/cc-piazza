@@ -1,8 +1,14 @@
 const express = require('express')
 const mongoose = require('mongoose')
+const bodyParser = require('body-parser')
 require('dotenv/config')
 
 const app = express()
+app.use(bodyParser.json())
+
+const authRoute = require('./routes/auth')
+
+app.use('/api/user',authRoute)
 
 app.get('/', (req,res)=>{
     res.send("you're in homepage")
