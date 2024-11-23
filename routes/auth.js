@@ -5,6 +5,7 @@ const router = express.Router()
 const {registerValidation, loginValidation} = require('../validations/validation')
 
 const bcryptjs = require('bcryptjs')
+const jsonwebtoken = require('jsonwebtoken')
 
 router.post('/register', async(req,res)=>{
 
@@ -31,7 +32,7 @@ router.post('/register', async(req,res)=>{
     })
 
     try{
-        const usertoadd = user.save()
+        const savedUser = user.save()
         return res.send({
             message: "User registered successfully!",
             user: {
@@ -64,8 +65,8 @@ router.post('/login', async(req,res)=>{
          return res.status(400).send({message:'Password is incorrect'})
      }
 
-     //placeholder
-     return res.send("You logged in")
+     const token = jsonwebtoken.sign({_id:userExists._id}, process.env.TOKEN_SECRET)
+     res.header('auth-token', token).send({'auth-token':token})
 
 })
 
