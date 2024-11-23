@@ -1,7 +1,9 @@
 const express = require('express')
 const User = require('../models/User')
 const router = express.Router()
-const {registerValidation} = require('../validations/validation')
+
+const {registerValidation, loginValidation} = require('../validations/validation')
+
 const bcryptjs = require('bcryptjs')
 
 router.post('/register', async(req,res)=>{
@@ -13,8 +15,8 @@ router.post('/register', async(req,res)=>{
     }
 
     //Validation to check is user already exists
-    const userExsists = await User.findOne({email:req.body.email})
-    if (userExsists){
+    const userExists = await User.findOne({email:req.body.email})
+    if (userExists){
         return res.status(400).send({message:'User already exists'})
     }
 
@@ -30,7 +32,7 @@ router.post('/register', async(req,res)=>{
 
     try{
         const usertoadd = user.save()
-        res.send({
+        return res.send({
             message: "User registered successfully!",
             user: {
                 username: user.username,
@@ -38,8 +40,33 @@ router.post('/register', async(req,res)=>{
             },
         })
     }catch(err){
-        res.status(400).send({message:err})
+        return res.status(400).send({message:err})
     }
+})
+
+router.post('/login', async(req,res)=>{
+
+     //Validation to check user input
+     const {error} = loginValidation(req.body)
+     if (error){
+        return res.status(400).send({message:error['details'][0]['message']})
+    }
+
+     //Validation to check is user already exists
+    const userExists = await User.findOne({email:req.body.email})
+    if (!userExists){
+        return res.status(400).send({message:'User does not exist'})
+    }
+
+     // Validation to check user password
+     const passwordValidation = await bcryptjs.compare(req.body.password,userExists.password)
+     if(!passwordValidation){
+         return res.status(400).send({message:'Password is incorrect'})
+     }
+
+     //placeholder
+     return res.send("You logged in")
+
 })
 
 module.exports = router
