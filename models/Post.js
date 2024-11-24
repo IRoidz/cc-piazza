@@ -25,13 +25,16 @@ const postSchema = mongoose.Schema({
     },
     expiration:{
         type: Date,
-        required: true
+        default: () =>{
+            const expirationDate = new Date()
+            expirationDate.setMinutes(expirationDate.getMinutes() + 5)
+            return expirationDate
+        },
     },
     status:{
         type: String,
         enum: ['Live', 'Expired'],
         default: 'Live',
-        required: true
     },
     owner:{
         type: mongoose.Schema.Types.ObjectId,
