@@ -26,9 +26,9 @@ router.post('/register', async(req,res)=>{
     
     //code to insert user data
     const user = new User({
-        username:req.body.username,
-        email:req.body.email,
-        password:hashedPassword
+        username: req.body.username,
+        email: req.body.email,
+        password: hashedPassword
     })
 
     try{
