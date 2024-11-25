@@ -2,36 +2,30 @@ const express = require('express')
 const router = express.Router()
 
 const Post = require('../models/Post')
-
 const verify = require('../verifyToken')
-
 const {postValidation} = require('../validations/validation')
 
-// router.get('/', async(req,res)=>{
-//     try{
-//         const posts = await Post.find()
-//         res.send(posts)
-//     }catch(err){
-//         res.status(400).send({message:err})
-//     }
-// })
 
-router.get('/', async(req,res)=>{
+//view all messages, dynamic endpoint for filtering by topic type (inclusive)
+router.get('/', verify, async(req,res)=>{
     const topics = req.query.topics
-    if (!topics) {
-        return res.status(400).send({message: err.message})
+    let filter = {}
+
+    // allows filter to be empty, which gives us all posts if we need
+    if (topics) {
+        const topicList = topics.split(',')
+        filter = {topic: { $in: topicList}}
     }
 
-    const topicList = topics.split(',')
     try{
-        const posts = await Post.find({ topic: { $in: topicList } })
-        //const posts = await Post.find({ topic: { $regex: new RegExp(`^${topic}$`, 'i') } });
+        const posts = await Post.find(filter)
         res.send(posts)
     }catch(err){
         res.status(400).send({message:err})
     }
 })
 
+// route to make a post
 router.post('/', verify, async(req,res)=>{
 
     const {error} = postValidation(req.body)
@@ -50,6 +44,24 @@ router.post('/', verify, async(req,res)=>{
         return res.send(savedPost)
     }catch(err){
         res.status(400).send({message:err})
+    }
+})
+
+router.post('/:postId/comments', verify, async(req,res)=>{
+
+    try{
+        const post = await Post.findById(req.params.postId)
+        if (!post) return res.status(404).send({message: 'Post not found'})
+
+        post.comments.push({
+            user: req.user._id,
+            comment: req.body.comment,
+        })
+
+        await post.save()
+        res.status(201).send({message: 'comment added'})
+    }catch(err){
+        res.status(500).send({message: err.message})
     }
 })
 
