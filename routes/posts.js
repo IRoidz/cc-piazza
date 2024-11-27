@@ -6,7 +6,7 @@ const verify = require('../verifyToken')
 const {postValidation} = require('../validations/validation')
 
 
-//view all messages, dynamic endpoint for filtering by topic type (inclusive)
+//view all posts, dynamic endpoint for filtering by topic type (inclusive)
 router.get('/', verify, async(req,res)=>{
     const topics = req.query.topics
     let filter = {}
@@ -16,12 +16,28 @@ router.get('/', verify, async(req,res)=>{
         const topicList = topics.split(',')
         filter = {topic: { $in: topicList}}
     }
-
     try{
         const posts = await Post.find(filter)
         res.send(posts)
     }catch(err){
         res.status(400).send({message:err})
+    }
+})
+
+router.get('/most-active', verify, async(req,res)=>{
+    try{
+        const topics = req.query.topics ? req.query.topics.split(',') : []
+        const filter = topics.length > 0 ? {topic: {$in: topics}} : {}
+
+        const posts = await Post.aggregate([
+            {$match: filter},
+            {$addFields: {totalReactions: {$add: ['$likes', '$dislikes']}}},
+            {$sort: {totalReactions: -1}}
+        ])
+        
+        res.status(200).send(posts)
+    }catch(err){
+        res.status(500).send({message: err})
     }
 })
 
@@ -47,6 +63,7 @@ router.post('/', verify, async(req,res)=>{
     }
 })
 
+//posting comments using the post id
 router.post('/:postId/comments', verify, async(req,res)=>{
 
     try{
@@ -58,10 +75,34 @@ router.post('/:postId/comments', verify, async(req,res)=>{
             comment: req.body.comment,
         })
 
-        await post.save()
-        res.status(201).send({message: 'comment added'})
+        const savedComment = await post.save()
+        res.status(201).send({savedComment})
     }catch(err){
-        res.status(500).send({message: err.message})
+        res.status(500).send({message:err})
+    }
+})
+
+// made liking and disliking into one route react for simplicity
+router.post('/:postId/react', verify, async(req,res)=>{
+    const reaction = req.body.reaction
+
+    if (!['like', 'dislike'].includes(reaction)) {
+        return res.status(400).send({ message: 'Invalid reaction type' });
+    }
+
+    try{
+        const post = await Post.findById(req.params.postId)
+        if (!post) return res.status(404).send({message: 'Post not found'})
+        
+        if (reaction === 'like') {
+            post.likes += 1
+        } else if (reaction === 'dislike') {
+            post.dislikes += 1
+        }
+        const savedReaction = await post.save()
+        res.status(201).send({savedReaction})
+    }catch(err) {
+        res.status(500).send({message:err})
     }
 })
 
