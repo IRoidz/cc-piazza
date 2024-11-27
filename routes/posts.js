@@ -3,11 +3,12 @@ const router = express.Router()
 
 const Post = require('../models/Post')
 const verify = require('../verifyToken')
+const checkExpiration = require('../checkExpiration')
 const {postValidation} = require('../validations/validation')
 
 
 //view all posts, dynamic endpoint for filtering by topic type (inclusive)
-router.get('/', verify, async(req,res)=>{
+router.get('/', verify, checkExpiration, async(req,res)=>{
     const topics = req.query.topics
     let filter = {}
 
@@ -26,15 +27,17 @@ router.get('/', verify, async(req,res)=>{
 
 router.get('/most-active', verify, async(req,res)=>{
     try{
+        //if there are topics in the query then split into array or else return empty array
         const topics = req.query.topics ? req.query.topics.split(',') : []
+        //if topics isnt empty then we make filter for those topics or we return empty
         const filter = topics.length > 0 ? {topic: {$in: topics}} : {}
 
+        //create an aggregate to sort by total likes and dislieks by adding a new field totalreactions and sorting it by highest
         const posts = await Post.aggregate([
             {$match: filter},
             {$addFields: {totalReactions: {$add: ['$likes', '$dislikes']}}},
             {$sort: {totalReactions: -1}}
         ])
-        
         res.status(200).send(posts)
     }catch(err){
         res.status(500).send({message: err})
