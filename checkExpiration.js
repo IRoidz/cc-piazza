@@ -8,7 +8,6 @@ const checkExpiration = async(req,res,next)=>{
             {expiration: {$lte: now}, status: 'live'},
             {$set: {status: 'expired'}}
         )
-
         next()
     }catch(err){
         return res.status(500).send({message: err.message})

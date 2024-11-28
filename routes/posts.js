@@ -5,18 +5,36 @@ const Post = require('../models/Post')
 const verify = require('../verifyToken')
 const checkExpiration = require('../checkExpiration')
 const {postValidation} = require('../validations/validation')
+const checkPostStatus = require('../checkPostStatus')
 
 
 //view all posts, dynamic endpoint for filtering by topic type (inclusive)
 router.get('/', verify, checkExpiration, async(req,res)=>{
     const topics = req.query.topics
-    let filter = {}
+    let filter = {status: 'live'}
 
     // allows filter to be empty, which gives us all posts if we need
     if (topics) {
         const topicList = topics.split(',')
-        filter = {topic: { $in: topicList}}
+        filter.topic = {$in: topicList}
     }
+    try{
+        const posts = await Post.find(filter)
+        res.send(posts)
+    }catch(err){
+        res.status(400).send({message:err})
+    }
+})
+
+router.get('/expired', verify, checkExpiration, async(req,res)=>{
+    const topics = req.query.topics
+    let filter = {status: 'expired'}
+
+    // allows filter to be empty, which gives us all posts if we need
+    if (topics) {
+        const topicList = topics.split(',')
+        filter.topic = {$in: topicList}}
+
     try{
         const posts = await Post.find(filter)
         res.send(posts)

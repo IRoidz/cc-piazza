@@ -11,7 +11,7 @@ const postSchema = mongoose.Schema({
     },
     topic:{
         type: [String],
-        enum: ['Politics', 'Health', 'Sport', 'Tech'],
+        enum: ['politics', 'health', 'sport', 'tech'],
         required: true
     },
     createdAt:{
@@ -33,8 +33,8 @@ const postSchema = mongoose.Schema({
     },
     status:{
         type: String,
-        enum: ['Live', 'Expired'],
-        default: 'Live',
+        enum: ['live', 'expired'],
+        default: 'live',
     },
     owner:{
         type: mongoose.Schema.Types.ObjectId,

@@ -22,7 +22,7 @@ const postValidation = (data) =>{
         title: joi.string().required().min(1).max(1000),
         topic: joi
         .array()
-        .items(joi.string().valid('Politics', 'Health', 'Sport', 'Tech'))
+        .items(joi.string().valid('politics', 'health', 'sport', 'tech'))
         .required(),
         body: joi.string().required().max(3000),
     })
