@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const User = require('./User')
+const { required } = require('joi')
 
 // minlength, maxlength for String and min, max for Number
 const postSchema = mongoose.Schema({
@@ -47,11 +48,14 @@ const postSchema = mongoose.Schema({
     },
     dislikes:{
         type: Number,
-        default: 0
+        default: 0,
+        user: { type: mongoose.Schema.Types.ObjectId, ref: 'User'},
+        username: { type: String, required: true},
     },
     comments:[
         {
             user: { type: mongoose.Schema.Types.ObjectId, ref: 'User'},
+            username: { type: String, required: true},
             comment: { type: String, required: true},
             createdAt: { type: Date, default: Date.now},
         },

@@ -85,7 +85,7 @@ router.post('/', verify, async(req,res)=>{
 })
 
 //posting comments using the post id
-router.post('/:postId/comments', verify, async(req,res)=>{
+router.post('/:postId/comments', verify, checkPostStatus, async(req,res)=>{
 
     try{
         const post = await Post.findById(req.params.postId)
@@ -104,7 +104,7 @@ router.post('/:postId/comments', verify, async(req,res)=>{
 })
 
 // made liking and disliking into one route react for simplicity
-router.post('/:postId/react', verify, async(req,res)=>{
+router.post('/:postId/react', verify, checkPostStatus, async(req,res)=>{
     const reaction = req.body.reaction
 
     if (!['like', 'dislike'].includes(reaction)) {
