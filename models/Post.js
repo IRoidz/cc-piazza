@@ -28,7 +28,7 @@ const postSchema = mongoose.Schema({
         type: Date,
         default: () =>{
             const expirationDate = new Date()
-            expirationDate.setMinutes(expirationDate.getMinutes() + 5)
+            expirationDate.setMinutes(expirationDate.getMinutes() + 15)
             return expirationDate
         },
     },
@@ -49,8 +49,6 @@ const postSchema = mongoose.Schema({
     dislikes:{
         type: Number,
         default: 0,
-        user: { type: mongoose.Schema.Types.ObjectId, ref: 'User'},
-        username: { type: String, required: true},
     },
     comments:[
         {
@@ -60,6 +58,15 @@ const postSchema = mongoose.Schema({
             createdAt: { type: Date, default: Date.now},
         },
     ],
+    interactions: [
+        {
+            user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+            username: { type: String, required: true },
+            type: { type: String, enum: ['like', 'dislike', 'comment'], required: true },
+            content: { type: String }, // For comments only
+            interactedAt: { type: Date, default: Date.now },
+        },
+    ]
 })
 
 //mongoose automatically converts model name to lower case and plural

@@ -85,7 +85,7 @@ router.post('/', verify, async(req,res)=>{
 })
 
 //posting comments using the post id
-router.post('/:postId/comments', verify, checkPostStatus, async(req,res)=>{
+router.post('/:postId/comments', verify, checkExpiration, checkPostStatus, async(req,res)=>{
 
     try{
         const post = await Post.findById(req.params.postId)
@@ -93,18 +93,30 @@ router.post('/:postId/comments', verify, checkPostStatus, async(req,res)=>{
 
         post.comments.push({
             user: req.user._id,
+            username: req.user.username,
             comment: req.body.comment,
+        })
+
+        const timeLeft = Math.max(0, Math.floor((post.expiration - Date.now()) / 1000)) + ' seconds'
+
+        post.interactions.push({
+            user: req.user._id,
+            username: req.user.username,
+            type: 'comment',
+            interactedAt: new Date(),
+            timeLeft,
         })
 
         const savedComment = await post.save()
         res.status(201).send({savedComment})
     }catch(err){
-        res.status(500).send({message:err})
+        console.log(err)
+        res.status(500).send({message:'error'})
     }
 })
 
 // made liking and disliking into one route react for simplicity
-router.post('/:postId/react', verify, checkPostStatus, async(req,res)=>{
+router.post('/:postId/react', verify, checkExpiration, checkPostStatus, async(req,res)=>{
     const reaction = req.body.reaction
 
     if (!['like', 'dislike'].includes(reaction)) {
@@ -113,6 +125,7 @@ router.post('/:postId/react', verify, checkPostStatus, async(req,res)=>{
 
     try{
         const post = await Post.findById(req.params.postId)
+        console.log('req.user:', req.user)
         if (!post) return res.status(404).send({message: 'Post not found'})
         
         if (reaction === 'like') {
@@ -120,10 +133,22 @@ router.post('/:postId/react', verify, checkPostStatus, async(req,res)=>{
         } else if (reaction === 'dislike') {
             post.dislikes += 1
         }
+
+        const timeLeft = Math.max(0, Math.floor((post.expiration - Date.now()) / 1000)) + ' seconds'
+
+        post.interactions.push({
+            user: req.user._id,
+            username: req.user.username,
+            type: reaction,
+            interactedAt: new Date(),
+            timeLeft,
+        })
+
         const savedReaction = await post.save()
         res.status(201).send({savedReaction})
     }catch(err) {
-        res.status(500).send({message:err})
+        console.error(err)
+        res.status(500).send({message:'error'})
     }
 })
 

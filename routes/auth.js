@@ -65,7 +65,7 @@ router.post('/login', async(req,res)=>{
          return res.status(400).send({message:'Password is incorrect'})
      }
 
-     const token = jsonwebtoken.sign({_id:userExists._id}, process.env.TOKEN_SECRET)
+     const token = jsonwebtoken.sign({_id:userExists._id, username: userExists.username}, process.env.TOKEN_SECRET)
      res.header('auth-token', token).send({'auth-token':token})
 
 })
