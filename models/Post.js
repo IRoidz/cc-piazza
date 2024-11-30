@@ -28,7 +28,7 @@ const postSchema = mongoose.Schema({
         type: Date,
         default: () =>{
             const expirationDate = new Date()
-            expirationDate.setMinutes(expirationDate.getMinutes() + 15)
+            expirationDate.setMinutes(expirationDate.getMinutes() + 25)
             return expirationDate
         },
     },

@@ -11,7 +11,7 @@ const checkPostStatus = require('../checkPostStatus')
 //view all posts, dynamic endpoint for filtering by topic type (inclusive)
 router.get('/', verify, checkExpiration, async(req,res)=>{
     const topics = req.query.topics
-    let filter = {status: 'live'}
+    let filter = {}
 
     // allows filter to be empty, which gives us all posts if we need
     if (topics) {
@@ -127,6 +127,10 @@ router.post('/:postId/react', verify, checkExpiration, checkPostStatus, async(re
         const post = await Post.findById(req.params.postId)
         console.log('req.user:', req.user)
         if (!post) return res.status(404).send({message: 'Post not found'})
+
+        if (post.owner.toString() === req.user._id.toString()) {
+            return res.status(400).send({ message: 'You cannot like or dislike your own post.' });
+        }
         
         if (reaction === 'like') {
             post.likes += 1
