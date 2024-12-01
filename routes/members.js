@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 
 const User = require('../models/User')
-const verify = require('../verifyToken')
+const verify = require('../middleware/verifyToken')
 
 router.get('/', verify, async(req,res)=>{
     try{

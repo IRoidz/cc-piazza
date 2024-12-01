@@ -2,10 +2,10 @@ const express = require('express')
 const router = express.Router()
 
 const Post = require('../models/Post')
-const verify = require('../verifyToken')
-const checkExpiration = require('../checkExpiration')
+const verify = require('../middleware/verifyToken')
+const checkExpiration = require('../middleware/checkExpiration')
 const {postValidation} = require('../validations/validation')
-const checkPostStatus = require('../checkPostStatus')
+const checkPostStatus = require('../middleware/checkPostStatus')
 
 
 //view all posts, dynamic endpoint for filtering by topic type (inclusive)
