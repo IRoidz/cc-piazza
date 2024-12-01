@@ -46,17 +46,32 @@ router.get('/expired', verify, checkExpiration, async(req,res)=>{
 router.get('/most-active', verify, async(req,res)=>{
     try{
         //if there are topics in the query then split into array or else return empty array
-        const topics = req.query.topics ? req.query.topics.split(',') : []
-        //if topics isnt empty then we make filter for those topics or we return empty
-        const filter = topics.length > 0 ? {topic: {$in: topics}} : {}
+        const topics = req.query.topics ? req.query.topics.toLowerCase().split(',') : []
+
+        const status = req.query.status
+
+        if (!status || !['live', 'expired'].includes(status)) {
+            return res.status(400).send({ message: 'Invalid or missing status. Use "live" or "expired".' });
+        }
+
+        const filter = { status }; // Add the status to the filter
+        if (topics.length > 0) {
+            filter.topic = { $in: topics }; // Add topics filter if provided
+        }
+
 
         //create an aggregate to sort by total likes and dislieks by adding a new field totalreactions and sorting it by highest
         const posts = await Post.aggregate([
             {$match: filter},
             {$addFields: {totalReactions: {$add: ['$likes', '$dislikes']}}},
-            {$sort: {totalReactions: -1}}
+            {$sort: {totalReactions: -1}},
         ])
-        res.status(200).send(posts)
+
+        if (!posts.length) {
+            return res.status(404).send({ message: 'No posts found for the given criteria.' });
+        }
+
+        res.status(200).send(posts[0])
     }catch(err){
         res.status(500).send({message: err})
     }
